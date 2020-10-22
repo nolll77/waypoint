@@ -15,7 +15,7 @@ type App struct {
 	Labels map[string]string `hcl:"labels,optional"`
 	URL    *AppURL           `hcl:"url,block" default:"{}"`
 
-	BuildRaw   *hclStage `hcl:"build,block"`
+	BuildRaw   *hclBuild `hcl:"build,block"`
 	DeployRaw  *hclStage `hcl:"deploy,block"`
 	ReleaseRaw *hclStage `hcl:"release,block"`
 
@@ -95,6 +95,18 @@ func (c *App) Build(ctx *hcl.EvalContext) (*Build, error) {
 
 	var b Build
 	if diag := gohcl.DecodeBody(c.BuildRaw.Body, ctx, &b); diag.HasErrors() {
+		return nil, diag
+	}
+
+	return &b, nil
+}
+
+// Registry loads the Registry section of the configuration.
+func (c *App) Registry(ctx *hcl.EvalContext) (*Registry, error) {
+	ctx = appendContext(c.ctx, ctx)
+
+	var b Registry
+	if diag := gohcl.DecodeBody(c.BuildRaw.Registry.Body, ctx, &b); diag.HasErrors() {
 		return nil, diag
 	}
 
