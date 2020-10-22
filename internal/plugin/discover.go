@@ -13,7 +13,7 @@ import (
 
 	"github.com/adrg/xdg"
 
-	"github.com/hashicorp/waypoint/internal/config"
+	"github.com/hashicorp/waypoint/internal/config2"
 )
 
 // Discover finds the given plugin and returns the command for it. The command
