@@ -103,9 +103,13 @@ func (c *App) Build(ctx *hcl.EvalContext) (*Build, error) {
 
 // Registry loads the Registry section of the configuration.
 func (c *App) Registry(ctx *hcl.EvalContext) (*Registry, error) {
-	ctx = appendContext(c.ctx, ctx)
+	// Registry is optional
+	if c.BuildRaw == nil || c.BuildRaw.Registry == nil {
+		return nil, nil
+	}
 
 	var b Registry
+	ctx = appendContext(c.ctx, ctx)
 	if diag := gohcl.DecodeBody(c.BuildRaw.Registry.Body, ctx, &b); diag.HasErrors() {
 		return nil, diag
 	}
@@ -127,9 +131,12 @@ func (c *App) Deploy(ctx *hcl.EvalContext) (*Deploy, error) {
 
 // Release loads the associated section of the configuration.
 func (c *App) Release(ctx *hcl.EvalContext) (*Release, error) {
-	ctx = appendContext(c.ctx, ctx)
+	if c.ReleaseRaw == nil {
+		return nil, nil
+	}
 
 	var b Release
+	ctx = appendContext(c.ctx, ctx)
 	if diag := gohcl.DecodeBody(c.ReleaseRaw.Body, ctx, &b); diag.HasErrors() {
 		return nil, diag
 	}

@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	"github.com/hashicorp/go-argmapper"
 	"github.com/hashicorp/hcl/v2"
@@ -10,7 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/hashicorp/waypoint-plugin-sdk/component"
-	"github.com/hashicorp/waypoint/internal/config"
+	"github.com/hashicorp/waypoint/internal/config2"
 	"github.com/hashicorp/waypoint/internal/plugin"
 	pb "github.com/hashicorp/waypoint/internal/server/gen"
 )
@@ -62,8 +63,30 @@ type componentCreator struct {
 // for an app.
 var componentCreatorMap = map[component.Type]*componentCreator{
 	component.BuilderType: &componentCreator{
+		Type: component.BuilderType,
 		ConfigFunc: func(a *App, ctx *hcl.EvalContext) (interface{}, error) {
 			return a.config.Build(ctx)
+		},
+	},
+
+	component.RegistryType: &componentCreator{
+		Type: component.RegistryType,
+		ConfigFunc: func(a *App, ctx *hcl.EvalContext) (interface{}, error) {
+			return a.config.Registry(ctx)
+		},
+	},
+
+	component.PlatformType: &componentCreator{
+		Type: component.PlatformType,
+		ConfigFunc: func(a *App, ctx *hcl.EvalContext) (interface{}, error) {
+			return a.config.Deploy(ctx)
+		},
+	},
+
+	component.ReleaseManagerType: &componentCreator{
+		Type: component.ReleaseManagerType,
+		ConfigFunc: func(a *App, ctx *hcl.EvalContext) (interface{}, error) {
+			return a.config.Release(ctx)
 		},
 	},
 }
@@ -80,8 +103,9 @@ func (cc *componentCreator) Create(
 	}
 
 	// If we have no configuration or the use is nil or type is empty then
-	// we return an error.
-	if cfg == nil {
+	// we return an error. We have to use the reflect trick here because we
+	// may get a non-nil interface but nil value.
+	if cfg == nil || !reflect.Indirect(reflect.ValueOf(cfg)).IsValid() {
 		return nil, status.Errorf(codes.Unimplemented,
 			"component type %s is not configured", cc.Type)
 	}
@@ -124,7 +148,7 @@ func (cc *componentCreator) Create(
 	return &Component{
 		Value: pinst.Component,
 		Info: &pb.Component{
-			Type: pb.Component_Type(opCfg.Use.Type),
+			Type: pb.Component_Type(cc.Type),
 			Name: opCfg.Use.Type,
 		},
 
