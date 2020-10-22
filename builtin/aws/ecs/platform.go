@@ -1290,7 +1290,6 @@ type Config struct {
 	// it disabled until we figure out how to handle that onramp case.
 	// AssignPublicIp bool `hcl:"assign_public_ip,optional"`
 
-
 	// Port that your service is running on within the actual container.
 	// Defaults to port 3000.
 	ServicePort int64 `hcl:"service_port,optional"`
