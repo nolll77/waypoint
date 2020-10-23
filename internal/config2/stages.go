@@ -18,6 +18,10 @@ type Build struct {
 	Labels map[string]string `hcl:"labels,optional"`
 	Hooks  []*Hook           `hcl:"hook,block"`
 	Use    *Use              `hcl:"use,block"`
+
+	// This should not be used directly. This is here for validation.
+	// Instead, use App.Registry().
+	Registry *Registry `hcl:"registry,block"`
 }
 
 // Registry are the registry settings.

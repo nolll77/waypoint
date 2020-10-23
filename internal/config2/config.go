@@ -24,6 +24,7 @@ type hclConfig struct {
 	Labels  map[string]string `hcl:"labels,optional"`
 	Plugin  []*Plugin         `hcl:"plugin,block"`
 	Apps    []*hclApp         `hcl:"app,block"`
+	Body    hcl.Body          `hcl:",body"`
 }
 
 // Runner is the configuration for supporting runners in this project.
